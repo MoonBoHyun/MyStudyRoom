@@ -1,97 +1,95 @@
-#클래스 생성 및 초기화
-class Node(object):
-    def __init__(self, data):
+class Node(): #기본적인 노드 클래스 구현
+    def __init__(self, data): #인스턴스를 만드는 동시에 초깃값 부여
         self.data = data
-        self.left = self.right = None
+        self.Left = None
+        self.Right = None
 
-class BinarySearchTree(object):
+class BinarySearchTree():
     def __init__(self):
         self.root = None
 
-    #탐색 메서드
-    def find(self, key):
-        return self._find_value(self.root, key)
+#탐색 메서드
+    def search(self, key):
+        return self.search_key(self.root, key) #search_key의 인스턴스 root,key를 반환
 
-    def _find_value(self, root, key):
-        # 만일 root값이 존재하거나 root의 값이 key와 같다면 root 반환
-        if root is None or root.data == key:
-            return root is not None
-        elif key < root.data:
-            # 만일 키값이 root.data보다 작으면 왼쪽 서브트리로 이동하고
-            return self._find_value(root.left, key)
-        else:
-            # 만일 키값이 root.data보다 크면 오른쪽 서브트리로 이동
-            return self._find_value(root.right, key)
+    def search_key(self, root, key):
+        if root is None: #만약 루트가 비어있다면
+            return print("탐색한 숫자가 존재하지 않습니다.",end='')
+        elif root.data == key: #루트의 데이터가 넣으려는 key와 같다면
+            return root,print("탐색한 숫자%d"%key,end='')
+        elif key < root.data : #루트의 데이터보다 key값이 작다면 return 시켜줘서 함수를 다시 사용함으로써 왼쪽서브트리로 이동한 뒤, 다시 키값을 찾는다
+            return self.search_key(root.Left, key)
+        else: #루트의 데이터보다 key값이 크면 return 시켜줘서 함수를 다시 사용함으로써 오른쪽으로 이동한 뒤, 다시 키값을 찾는다
+            return self.search_key(root.Right, key)
 
-    #삽입 메서드
+#삽입 메서드
     def insert(self, data):
-        self.root = self._insert_value(self.root, data)
-        return self.root is not None
+        self.root = self.insert_value(self.root, data)
+        return self.root is not None,print("삽입된 노드는 %d"%data)
 
-    def _insert_value(self, node, data):
-        # 만약 노드가 비어 있으면 data를 노드에 넣어준다.
-        if node is None:
-            node = Node(data)
+    def insert_value(self, node, data):
+        if node is None: # 노드가 비어있을경우
+            node = Node(data) #노드의 데이터가 노드로 삽입된다
+        elif node.data == data:
+            print("탐색 되었으므로 삽입 실패")
         else:
-            # 노드데이터보다 데이터가 작으면 왼쪽 서브트리로 이동한다.
-            if data <= node.data:
-                node.left = self._insert_value(node.left, data)
-            else:
-                # 노드데이터보다 데이터가 크면 오른쪽 서브트리로 간다.
-                node.right = self._insert_value(node.right, data)
+            if data <= node.data: # 노드데이터보다 데이터가 작으면 왼쪽 서브트리로 이동한다.
+                node.Left = self.insert_value(node.Left, data)
+            else: # 노드데이터보다 데이터가 크면 오른쪽 서브트리로 이동한다.
+                node.Right = self.insert_value(node.Right, data)
         return node
 
-    #삭제 메서드
+#삭제 메서드
     def delete(self, key):
-        self.root, deleted = self._delete_value(self.root, key)
+        self.root, deleted = self.delete_value(self.root, key)
         return deleted
 
-    def _delete_value(self, node, key):
-        if node is None:
-            return node, False
+    def delete_value(self, node, key):
+        if node is None: #만일 노드의 값이 존재하지 않는다면
+            return node, print("삭제할 노드%d가 존재하지 않습니다."%key, end='')
 
-        #deleted = False
-        if key == node.data:
-            deleted = True
-            if node.left and node.right: # 삭제할 노드의 자식 노드가 두 개인 경우
-                parent, child = node, node.right
-                while child.left is not None:
-                    parent, child = child, child.left
-                child.left = node.left
-                if parent != node:
-                    parent.left = child.right
-                    child.right = node.right
-                node = child
-            elif node.left or node.right: #삭제할 노드의 자식 노드가 하나인 경우
-                node = node.left or node.right
+        if key == node.data: #노드의 데이터와 삭제하려는 key값이 일치하면
+            delete = print("선택한 노드%d가 지워졌습니다"%key,node, end='')
+            if node.Left or node.Right: #삭제할 노드의 자식 노드가 하나인 경우
+                node = node.Left or node.Right  #삭제한 노드의 왼쪽이나 오른쪽의 자식 노드
+            elif node.Left and node.Right: #삭제할 노드의 자식 노드가 두 개인 경우
+                parent, child = node, node.Right #노드는 부모가 되고 오른쪽에 있는 자식은 자식이 된다.
+                if child.Left is not None: #만약 왼쪽서브트리의 노드가 존재한다면
+                    parent, child = child, child.Left
+                child.Left = node.Left
             else: #삭제할 노드가 단말 노드인 경우
                 node = None
         elif key < node.data:
-            node.left, deleted = self._delete_value(node.left, key)
+            node.Left, delete = self.delete_value(node.Left, key)
         else:
-            node.right, deleted = self._delete_value(node.right, key)
-        return node, deleted
+            node.Right, delete = self.delete_value(node.Right, key)
+        return node, delete
 
-array = [40, 4, 34, 45, 14, 55, 48, 13, 15, 49, 47]
+
+
+
+array = [20, 5, 3, 10, 7, 6, 12, 15, 13, 17, 23, 25, 29, 29]
 
 bst = BinarySearchTree()
 for x in array:
     bst.insert(x)
+print("------------------------------------------------------------------------")
 
-# Find
-print(bst.find(40)) # True
-print(bst.find(4)) # True
-print(bst.find(34)) # True
-print(bst.find(45)) # True
-print(bst.find(14)) # True
-print(bst.find(55)) # True
-print(bst.find(48)) # True
-print(bst.find(13)) # True
-print(bst.find(15)) # True
-print(bst.find(49)) # True
-print(bst.find(100)) # False
+print(bst.search(20))
+print(bst.search(3))
+print(bst.search(6))
+print(bst.search(13))
+print(bst.search(10))
+print(bst.search(12))
+print(bst.search(29))
+print(bst.search(29))
+print(bst.search(30))
+print("------------------------------------------------------------------------")
 
-# Delete
-#print(bst.delete(55)) # True
-print(bst.delete(14)) # True
-#print(bst.delete(11)) # False
+print(bst.delete(10))
+print(bst.delete(111))
+
+
+
+
+
